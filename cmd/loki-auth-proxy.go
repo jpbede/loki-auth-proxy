@@ -2,8 +2,8 @@ package main
 
 import (
 	"fmt"
-	"github.com/jpbede/loki-auth-proxy/internal/commands"
 	"github.com/urfave/cli/v2"
+	"go.bnck.me/loki-auth-proxy/internal/commands"
 	"log"
 	"os"
 )

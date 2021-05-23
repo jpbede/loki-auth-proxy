@@ -3,9 +3,9 @@ package proxy
 import (
 	"bytes"
 	"encoding/base64"
-	"github.com/jpbede/loki-auth-proxy/pkg/authenticator"
 	"github.com/valyala/fasthttp"
 	proxy "github.com/yeqown/fasthttp-reverse-proxy/v2"
+	"go.bnck.me/loki-auth-proxy/pkg/authenticator"
 )
 
 type Proxy struct {
