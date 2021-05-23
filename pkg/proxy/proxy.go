@@ -26,6 +26,7 @@ func (p *Proxy) proxyRequest(ctx *fasthttp.RequestCtx, username string) {
 		proxyServer = proxy.NewReverseProxy("", proxy.WithBalancer(backendServers))
 	}
 
+	// get org id form authenticator for username
 	ctx.Request.Header.Add("X-Scope-OrgID", p.Authenticator.GetTenantID(username))
 	proxyServer.ServeHTTP(ctx)
 }
@@ -33,13 +34,15 @@ func (p *Proxy) proxyRequest(ctx *fasthttp.RequestCtx, username string) {
 // AuthAndProxyHandler handler func for fasthttp that performs authentication and proxying
 func (p *Proxy) AuthAndProxyHandler() func(ctx *fasthttp.RequestCtx) {
 	return func(ctx *fasthttp.RequestCtx) {
-		auth := ctx.Request.Header.Peek("Authorization")
-		if bytes.HasPrefix(auth, basicAuthPrefix) {
-			payload, err := base64.StdEncoding.DecodeString(string(auth[len(basicAuthPrefix):]))
-			if err == nil {
-				pair := bytes.SplitN(payload, []byte(":"), 2)
-				if len(pair) == 2 && p.Authenticator.Authenticate(string(pair[0]), string(pair[1])) {
-					p.proxyRequest(ctx, string(pair[1]))
+		if auth := ctx.Request.Header.Peek("Authorization"); auth != nil {
+			if bytes.HasPrefix(auth, basicAuthPrefix) {
+				payload, err := base64.StdEncoding.DecodeString(string(auth[len(basicAuthPrefix):]))
+				if err == nil {
+					pair := bytes.SplitN(payload, []byte(":"), 2)
+					if len(pair) == 2 && p.Authenticator.Authenticate(string(pair[0]), string(pair[1])) {
+						p.proxyRequest(ctx, string(pair[1]))
+						return
+					}
 				}
 			}
 		}
