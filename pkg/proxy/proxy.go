@@ -5,13 +5,13 @@ import (
 	"encoding/base64"
 	"github.com/valyala/fasthttp"
 	proxy "github.com/yeqown/fasthttp-reverse-proxy/v2"
-	"go.bnck.me/loki-auth-proxy/pkg/authenticator"
+	"go.bnck.me/loki-auth-proxy/pkg/authenticators"
 )
 
 type Proxy struct {
 	ListenAddress string
 	Backends      []string
-	Authenticator authenticator.IAuthenticator
+	Authenticator authenticators.Authenticator
 }
 
 var basicAuthPrefix = []byte("Basic ")

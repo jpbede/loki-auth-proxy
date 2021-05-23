@@ -8,6 +8,11 @@ type Config struct {
 	}
 
 	Backends []string
+
+	Authenticator struct {
+		Name   string
+		Config map[string]string
+	}
 }
 
 var config *Config

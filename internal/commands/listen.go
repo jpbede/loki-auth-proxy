@@ -4,7 +4,7 @@ import (
 	"errors"
 	"github.com/urfave/cli/v2"
 	"go.bnck.me/loki-auth-proxy/internal/config"
-	"go.bnck.me/loki-auth-proxy/pkg/authenticator"
+	"go.bnck.me/loki-auth-proxy/pkg/authenticators"
 	"go.bnck.me/loki-auth-proxy/pkg/proxy"
 )
 
@@ -25,10 +25,15 @@ func runListen(c *cli.Context) error {
 		return errors.New("no backend server specified")
 	}
 
+	authenticator, err := authenticators.GetAuthenticator(cfg.Authenticator.Name, cfg.Authenticator.Config)
+	if err != nil {
+		return err
+	}
+
 	p := proxy.Proxy{
 		Backends:      cfg.Backends,
 		ListenAddress: cfg.HTTP.Listen,
-		Authenticator: &authenticator.File{},
+		Authenticator: authenticator,
 	}
 
 	return p.Run()
