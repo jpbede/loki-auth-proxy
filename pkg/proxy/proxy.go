@@ -8,6 +8,7 @@ import (
 	"go.bnck.me/loki-auth-proxy/pkg/authenticators"
 )
 
+// Proxy represents the loki proxy
 type Proxy struct {
 	Backends      []string
 	Authenticator authenticators.Authenticator

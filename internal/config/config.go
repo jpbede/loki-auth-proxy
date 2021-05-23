@@ -2,6 +2,7 @@ package config
 
 import "github.com/jinzhu/configor"
 
+// Config holds the application config
 type Config struct {
 	HTTP struct {
 		Listen string `default:":8080"`

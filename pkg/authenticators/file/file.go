@@ -7,6 +7,7 @@ import (
 	"io/ioutil"
 )
 
+// File represents the file authenticator
 type File struct {
 	Path string
 
@@ -17,22 +18,23 @@ func init() {
 	authenticators.RegisterAuthenticator("file", New)
 }
 
+// New creates a new File authenticator
 func New(config map[string]string) (authenticators.Authenticator, error) {
 	fileAuth := File{}
 
 	// check if path is given
-	if path, ok := config["path"]; !ok {
+	path, ok := config["path"]
+	if !ok {
 		return nil, errors.New("FileAuthenticator: no file path given")
-	} else {
-		fileAuth.Path = path
+	}
 
-		if fileBytes, err := ioutil.ReadFile(path); err != nil {
-			return nil, err
-		} else {
-			if err := yaml.Unmarshal(fileBytes, &fileAuth.credentials); err != nil {
-				return nil, err
-			}
-		}
+	fileAuth.Path = path
+	fileBytes, err := ioutil.ReadFile(path)
+	if err != nil {
+		return nil, err
+	}
+	if err := yaml.Unmarshal(fileBytes, &fileAuth.credentials); err != nil {
+		return nil, err
 	}
 
 	return &fileAuth, nil
