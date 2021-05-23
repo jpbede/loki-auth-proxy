@@ -41,7 +41,7 @@ func (p *Proxy) AuthAndProxyHandler() func(ctx *fasthttp.RequestCtx) {
 				if err == nil {
 					pair := bytes.SplitN(payload, []byte(":"), 2)
 					if len(pair) == 2 && p.Authenticator.Authenticate(string(pair[0]), string(pair[1])) {
-						p.proxyRequest(ctx, string(pair[1]))
+						p.proxyRequest(ctx, string(pair[0]))
 						return
 					}
 				}
