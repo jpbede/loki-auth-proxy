@@ -9,7 +9,6 @@ on:
 jobs:
   coverage:
     runs-on: ubuntu-18.04
-    needs: build
     strategy:
       matrix:
         go: [ "1.15.x", "1.16.x" ]
