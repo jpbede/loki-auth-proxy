@@ -7,4 +7,5 @@ require (
 	github.com/urfave/cli/v2 v2.3.0
 	github.com/valyala/fasthttp v1.18.0
 	github.com/yeqown/fasthttp-reverse-proxy/v2 v2.1.4
+	gopkg.in/yaml.v2 v2.2.3
 )

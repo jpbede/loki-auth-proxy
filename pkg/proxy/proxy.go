@@ -9,20 +9,29 @@ import (
 )
 
 type Proxy struct {
-	ListenAddress string
 	Backends      []string
 	Authenticator authenticators.Authenticator
 }
 
 var basicAuthPrefix = []byte("Basic ")
+var proxyServer *proxy.ReverseProxy
 
-func (p *Proxy) Handler() func(ctx *fasthttp.RequestCtx) {
-	backendServers := map[string]proxy.Weight{}
-	for _, backendServer := range p.Backends {
-		backendServers[backendServer] = proxy.Weight(100 / len(p.Backends))
+// proxyRequest proxies the request to the backend servers
+func (p *Proxy) proxyRequest(ctx *fasthttp.RequestCtx, username string) {
+	if proxyServer == nil {
+		backendServers := map[string]proxy.Weight{}
+		for _, backendServer := range p.Backends {
+			backendServers[backendServer] = proxy.Weight(100 / len(p.Backends))
+		}
+		proxyServer = proxy.NewReverseProxy("", proxy.WithBalancer(backendServers))
 	}
-	proxyServer := proxy.NewReverseProxy("", proxy.WithBalancer(backendServers))
 
+	ctx.Request.Header.Add("X-Scope-OrgID", p.Authenticator.GetTenantID(username))
+	proxyServer.ServeHTTP(ctx)
+}
+
+// AuthAndProxyHandler handler func for fasthttp that performs authentication and proxying
+func (p *Proxy) AuthAndProxyHandler() func(ctx *fasthttp.RequestCtx) {
 	return func(ctx *fasthttp.RequestCtx) {
 		auth := ctx.Request.Header.Peek("Authorization")
 		if bytes.HasPrefix(auth, basicAuthPrefix) {
@@ -30,8 +39,7 @@ func (p *Proxy) Handler() func(ctx *fasthttp.RequestCtx) {
 			if err == nil {
 				pair := bytes.SplitN(payload, []byte(":"), 2)
 				if len(pair) == 2 && p.Authenticator.Authenticate(string(pair[0]), string(pair[1])) {
-					ctx.Request.Header.Add("X-Scope-ID", p.Authenticator.GetTenantID(string(pair[0])))
-					proxyServer.ServeHTTP(ctx)
+					p.proxyRequest(ctx, string(pair[1]))
 				}
 			}
 		}
@@ -41,6 +49,7 @@ func (p *Proxy) Handler() func(ctx *fasthttp.RequestCtx) {
 	}
 }
 
-func (p *Proxy) Run() error {
-	return fasthttp.ListenAndServe(p.ListenAddress, p.Handler())
+// Run starts listening on given address
+func (p *Proxy) Run(listenAddress string) error {
+	return fasthttp.ListenAndServe(listenAddress, p.AuthAndProxyHandler())
 }

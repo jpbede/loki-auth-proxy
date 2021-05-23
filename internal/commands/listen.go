@@ -32,9 +32,8 @@ func runListen(c *cli.Context) error {
 
 	p := proxy.Proxy{
 		Backends:      cfg.Backends,
-		ListenAddress: cfg.HTTP.Listen,
 		Authenticator: authenticator,
 	}
 
-	return p.Run()
+	return p.Run(cfg.HTTP.Listen)
 }
