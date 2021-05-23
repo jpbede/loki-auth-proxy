@@ -3,14 +3,14 @@ package proxy
 import (
 	"bytes"
 	"encoding/base64"
-	"github.com/jpbede/loki-auth-proxy/authenticator"
-	"github.com/jpbede/loki-auth-proxy/config"
+	"github.com/jpbede/loki-auth-proxy/pkg/authenticator"
 	"github.com/valyala/fasthttp"
 	proxy "github.com/yeqown/fasthttp-reverse-proxy/v2"
 )
 
 type Proxy struct {
-	Config        *config.Config
+	ListenAddress string
+	Backends      []string
 	Authenticator authenticator.IAuthenticator
 }
 
@@ -18,12 +18,12 @@ var basicAuthPrefix = []byte("Basic ")
 
 func (p *Proxy) Run() error {
 	backendServers := map[string]proxy.Weight{}
-	for _, backendServer := range p.Config.Backends {
-		backendServers[backendServer] = proxy.Weight(100 / len(p.Config.Backends))
+	for _, backendServer := range p.Backends {
+		backendServers[backendServer] = proxy.Weight(100 / len(p.Backends))
 	}
 	proxyServer := proxy.NewReverseProxy("", proxy.WithBalancer(backendServers))
 
-	return fasthttp.ListenAndServe(p.Config.HTTP.Listen, func(ctx *fasthttp.RequestCtx) {
+	return fasthttp.ListenAndServe(p.ListenAddress, func(ctx *fasthttp.RequestCtx) {
 		auth := ctx.Request.Header.Peek("Authorization")
 		if bytes.HasPrefix(auth, basicAuthPrefix) {
 			// Check credentials

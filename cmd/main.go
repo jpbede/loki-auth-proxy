@@ -2,7 +2,7 @@ package main
 
 import (
 	"fmt"
-	"github.com/jpbede/loki-auth-proxy/commands"
+	"github.com/jpbede/loki-auth-proxy/internal/commands"
 	"github.com/urfave/cli/v2"
 	"log"
 	"os"
