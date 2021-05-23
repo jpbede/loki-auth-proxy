@@ -1,0 +1,73 @@
+before:
+  hooks:
+    - go mod tidy
+
+builds:
+  - binary: loki-auth-proxy
+    main: ./cmd/
+    env:
+      - CGO_ENABLED=0
+    ldflags:
+      - -s -w -X main.build={{.Version}} -X main.commit={{.Commit}} -X main.date={{.Date}}
+    goos:
+      - linux
+      - windows
+      - darwin
+
+archives:
+  - replacements:
+      darwin: Darwin
+      linux: Linux
+      windows: Windows
+      386: i386
+      amd64: x86_64
+
+checksum:
+  name_template: 'checksums.txt'
+
+snapshot:
+  name_template: "{{ .Tag }}-next"
+
+changelog:
+  sort: asc
+  filters:
+    exclude:
+      - '^docs:'
+      - '^test:'
+
+gomod:
+  # Proxy a module from proxy.golang.org, making the builds verifiable.
+  # This will only be effective if running against a tag. Snapshots will ignore this setting.
+  # Notice: for this to work your `build.main` must be a package, not a `.go` file.
+  proxy: true
+  env:
+    - GOPROXY=https://proxy.golang.org,direct
+    - GOSUMDB=sum.golang.org
+
+dockers:
+  - image_templates:
+    - ghcr.io/jpbede/loki-auth-proxy:latest
+    - ghcr.io/jpbede/loki-auth-proxy:{{ .Tag }}
+
+brews:
+  - name: loki-auth-proxy
+    goarm: 6
+    tap:
+      owner: jpbede
+      name: homebrew-tap
+      token: "{{ .Env.HOMEBREW_TAP_GITHUB_TOKEN }}"
+
+    commit_author:
+      name: goreleaserbot
+      email: goreleaser@carlosbecker.com
+
+    folder: Formula
+
+    homepage: "https://github.com/jpbede/loki-auth-proxy"
+
+    description: "Grafana Loki authentication proxy"
+
+    install: |
+      bin.install "loki-auth-proxy"
+    test: |
+      system "#{bin}/loki-auth-proxy"
