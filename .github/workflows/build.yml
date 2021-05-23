@@ -7,9 +7,8 @@ on:
     branches: [ main ]
 
 jobs:
-  coverage:
+  build:
     runs-on: ubuntu-18.04
-    needs: build
     strategy:
       matrix:
         go: [ "1.15.x", "1.16.x" ]
@@ -31,9 +30,6 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-go-
 
-      - name: Generate coverage report
+      - name: Test build
         run: |
-          go test `go list ./... | grep -v examples` -coverprofile=coverage.txt -covermode=atomic
-
-      - name: Upload coverage report
-        uses: codecov/codecov-action@v1
+          go build cmd/loki-auth-proxy.go
