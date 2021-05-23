@@ -31,6 +31,10 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-go-
 
+      - name: Test build
+        run: |
+          go build cmd/loki-auth-proxy.go
+
       - name: Generate coverage report
         run: |
           go test `go list ./... | grep -v examples` -coverprofile=coverage.txt -covermode=atomic
