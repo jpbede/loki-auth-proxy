@@ -9,6 +9,10 @@ on:
 jobs:
   coverage:
     runs-on: ubuntu-18.04
+    strategy:
+      matrix:
+        go: [ "1.15.x", "1.16.x" ]
+
     steps:
       - name: Set up Go 1.15
         uses: actions/setup-go@v2
@@ -31,4 +35,4 @@ jobs:
           go test `go list ./... | grep -v examples` -coverprofile=coverage.txt -covermode=atomic
 
       - name: Upload coverage report
-        uses: codecov/codecov-action@v1.0.2
+        uses: codecov/codecov-action@v1
