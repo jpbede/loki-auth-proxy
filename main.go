@@ -23,7 +23,7 @@ func main() {
 			&cli.StringFlag{
 				Name:        "config",
 				Aliases:     []string{"c"},
-				DefaultText: "/etc/tilecdn-api-gateway.yaml",
+				DefaultText: "/etc/loki-auth-proxy.yaml",
 			},
 		},
 	}

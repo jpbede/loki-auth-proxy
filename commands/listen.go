@@ -3,7 +3,8 @@ package commands
 import (
 	"errors"
 	"github.com/jpbede/loki-auth-proxy/config"
-	"github.com/jpbede/loki-auth-proxy/proxy"
+	"github.com/jpbede/loki-auth-proxy/pkg/authenticator"
+	"github.com/jpbede/loki-auth-proxy/pkg/proxy"
 	"github.com/urfave/cli/v2"
 )
 
@@ -25,7 +26,8 @@ func runListen(c *cli.Context) error {
 	}
 
 	p := proxy.Proxy{
-		Config: cfg,
+		Config:        cfg,
+		Authenticator: &authenticator.File{},
 	}
 
 	return p.Run()
