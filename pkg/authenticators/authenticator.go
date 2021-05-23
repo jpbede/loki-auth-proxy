@@ -13,6 +13,7 @@ type Authenticator interface {
 	GetTenantID(username string) string
 }
 
+// InitializerFunc is a function to create a new authenticator
 type InitializerFunc func(map[string]string) (Authenticator, error)
 
 var authenticators = map[string]InitializerFunc{}

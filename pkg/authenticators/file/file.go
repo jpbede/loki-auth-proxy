@@ -40,6 +40,7 @@ func New(config map[string]string) (authenticators.Authenticator, error) {
 	return &fileAuth, nil
 }
 
+// Authenticate checks given credentials
 func (f *File) Authenticate(username, password string) bool {
 	if foundPassword, ok := f.credentials[username]; ok {
 		return password == foundPassword
@@ -47,6 +48,7 @@ func (f *File) Authenticate(username, password string) bool {
 	return false
 }
 
+// GetTenantID returns the ID for the X-Scope-OrgID
 func (f *File) GetTenantID(username string) string {
 	return username
 }

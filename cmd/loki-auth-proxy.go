@@ -7,7 +7,7 @@ import (
 	"log"
 	"os"
 
-	_ "go.bnck.me/loki-auth-proxy/pkg/authenticators/_all"
+	_ "go.bnck.me/loki-auth-proxy/pkg/authenticators/all"
 )
 
 var (

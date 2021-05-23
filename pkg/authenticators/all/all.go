@@ -1,4 +1,4 @@
-package _all
+package all
 
 import (
 	// import all existing authenticators
