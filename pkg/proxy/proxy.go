@@ -16,17 +16,16 @@ type Proxy struct {
 
 var basicAuthPrefix = []byte("Basic ")
 
-func (p *Proxy) Run() error {
+func (p *Proxy) Handler() func(ctx *fasthttp.RequestCtx) {
 	backendServers := map[string]proxy.Weight{}
 	for _, backendServer := range p.Backends {
 		backendServers[backendServer] = proxy.Weight(100 / len(p.Backends))
 	}
 	proxyServer := proxy.NewReverseProxy("", proxy.WithBalancer(backendServers))
 
-	return fasthttp.ListenAndServe(p.ListenAddress, func(ctx *fasthttp.RequestCtx) {
+	return func(ctx *fasthttp.RequestCtx) {
 		auth := ctx.Request.Header.Peek("Authorization")
 		if bytes.HasPrefix(auth, basicAuthPrefix) {
-			// Check credentials
 			payload, err := base64.StdEncoding.DecodeString(string(auth[len(basicAuthPrefix):]))
 			if err == nil {
 				pair := bytes.SplitN(payload, []byte(":"), 2)
@@ -39,5 +38,9 @@ func (p *Proxy) Run() error {
 
 		// Request Basic Authentication otherwise
 		ctx.Error(fasthttp.StatusMessage(fasthttp.StatusUnauthorized), fasthttp.StatusUnauthorized)
-	})
+	}
+}
+
+func (p *Proxy) Run() error {
+	return fasthttp.ListenAndServe(p.ListenAddress, p.Handler())
 }

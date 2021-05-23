@@ -18,7 +18,7 @@ func main() {
 	app := &cli.App{
 		Name:    "loki-auth-proxy",
 		Usage:   "Grafana Loki authentication proxy",
-		Version: fmt.Sprintf("%s-%s", version, commit),
+		Version: fmt.Sprintf("%s-%s published at %s", version, commit, date),
 		Flags: []cli.Flag{
 			&cli.StringFlag{
 				Name:        "config",
