@@ -1,6 +1,10 @@
 package authenticators
 
-import "log"
+import (
+	"errors"
+	"fmt"
+	"log"
+)
 
 type Authenticator interface {
 	Authenticate(username, password string) bool
@@ -9,7 +13,7 @@ type Authenticator interface {
 
 type InitializerFunc func(map[string]string) (Authenticator, error)
 
-var authenticators map[string]InitializerFunc
+var authenticators = map[string]InitializerFunc{}
 
 func RegisterAuthenticator(name string, initializerFunc InitializerFunc) {
 	if _, ok := authenticators[name]; ok {
@@ -19,5 +23,8 @@ func RegisterAuthenticator(name string, initializerFunc InitializerFunc) {
 }
 
 func GetAuthenticator(name string, config map[string]string) (Authenticator, error) {
-	return authenticators[name](config)
+	if initializerFunc, ok := authenticators[name]; ok {
+		return initializerFunc(config)
+	}
+	return nil, errors.New(fmt.Sprintf("Authenticator %s not found", name))
 }

@@ -1,7 +1,6 @@
 package file
 
 import (
-	"errors"
 	"go.bnck.me/loki-auth-proxy/pkg/authenticators"
 )
 
@@ -13,7 +12,7 @@ func init() {
 }
 
 func New(config map[string]string) (authenticators.Authenticator, error) {
-	return &File{}, errors.New("kkk")
+	return &File{}, nil
 }
 
 func (f *File) Authenticate(username, password string) bool {

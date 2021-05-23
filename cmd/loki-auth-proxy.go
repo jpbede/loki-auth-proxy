@@ -6,6 +6,8 @@ import (
 	"go.bnck.me/loki-auth-proxy/internal/commands"
 	"log"
 	"os"
+
+	_ "go.bnck.me/loki-auth-proxy/pkg/authenticators/_all"
 )
 
 var (
