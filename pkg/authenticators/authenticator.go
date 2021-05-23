@@ -13,7 +13,7 @@ var authenticators map[string]InitializerFunc
 
 func RegisterAuthenticator(name string, initializerFunc InitializerFunc) {
 	if _, ok := authenticators[name]; ok {
-		log.Fatalf("Cannot register registrar type %s multiple times", name)
+		log.Fatalf("Cannot register authenticator %s multiple times", name)
 	}
 	authenticators[name] = initializerFunc
 }
