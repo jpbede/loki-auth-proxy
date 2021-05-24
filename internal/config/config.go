@@ -8,11 +8,15 @@ type Config struct {
 		Listen string `default:":8080"`
 	}
 
-	Backends []string
+	Backend string
 
 	Authenticator struct {
 		Name   string
 		Config map[string]string
+	}
+
+	Log struct {
+		Level string `default:"info"`
 	}
 }
 

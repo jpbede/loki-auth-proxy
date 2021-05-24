@@ -3,38 +3,65 @@ package proxy
 import (
 	"bytes"
 	"encoding/base64"
+	"github.com/rs/zerolog"
 	"github.com/valyala/fasthttp"
-	proxy "github.com/yeqown/fasthttp-reverse-proxy/v2"
 	"go.bnck.me/loki-auth-proxy/pkg/authenticators"
 )
 
 // Proxy represents the loki proxy
 type Proxy struct {
-	Backends      []string
+	Backend       string
 	Authenticator authenticators.Authenticator
+	logger        *zerolog.Logger
 }
 
 var basicAuthPrefix = []byte("Basic ")
-var proxyServer *proxy.ReverseProxy
+var proxyClient *fasthttp.HostClient
 
 // proxyRequest proxies the request to the backend servers
 func (p *Proxy) proxyRequest(ctx *fasthttp.RequestCtx, username string) {
-	if proxyServer == nil {
-		backendServers := map[string]proxy.Weight{}
-		for _, backendServer := range p.Backends {
-			backendServers[backendServer] = proxy.Weight(100 / len(p.Backends))
+	if proxyClient == nil {
+		proxyClient = &fasthttp.HostClient{
+			Addr: p.Backend,
 		}
-		proxyServer = proxy.NewReverseProxy("", proxy.WithBalancer(backendServers))
 	}
+
+	if p.logger != nil {
+		p.logger.Debug().
+			Str("for-host", string(ctx.Request.Host())).
+			Str("backend", proxyClient.Addr).
+			Msg("Proxying request to backend")
+	}
+
+	// prepare fasthttp context
+	p.prepareContext(ctx)
 
 	// get org id form authenticator for username
 	ctx.Request.Header.Add("X-Scope-OrgID", p.Authenticator.GetTenantID(username))
-	proxyServer.ServeHTTP(ctx)
+
+	// run request against backend
+	if err := proxyClient.Do(&ctx.Request, &ctx.Response); err != nil {
+		ctx.Response.SetStatusCode(fasthttp.StatusInternalServerError)
+		ctx.Response.SetBody([]byte(err.Error()))
+	} else if p.logger != nil {
+		p.logger.Debug().
+			Str("header", ctx.Response.Header.String()).
+			Msg("Got response from backend")
+	}
+
+	// postprocess fasthttp context
+	p.postProcessContext(ctx)
 }
 
 // AuthAndProxyHandler handler func for fasthttp that performs authentication and proxying
 func (p *Proxy) AuthAndProxyHandler() func(ctx *fasthttp.RequestCtx) {
 	return func(ctx *fasthttp.RequestCtx) {
+		if p.logger != nil {
+			p.logger.Debug().
+				Str("host", string(ctx.Request.Host())).
+				Msg("Got request to proxy, checking auth first")
+		}
+
 		if auth := ctx.Request.Header.Peek("Authorization"); auth != nil {
 			if bytes.HasPrefix(auth, basicAuthPrefix) {
 				payload, err := base64.StdEncoding.DecodeString(string(auth[len(basicAuthPrefix):]))
@@ -44,6 +71,17 @@ func (p *Proxy) AuthAndProxyHandler() func(ctx *fasthttp.RequestCtx) {
 						p.proxyRequest(ctx, string(pair[0]))
 						return
 					}
+					if p.logger != nil {
+						p.logger.Debug().
+							Str("host", string(ctx.Request.Host())).
+							Str("username", string(pair[0])).
+							Msg("Auth invalid, rejecting")
+					}
+				} else if p.logger != nil {
+					p.logger.Error().
+						Str("host", string(ctx.Request.Host())).
+						Err(err).
+						Msg("A error occurred while checking auth")
 				}
 			}
 		}
@@ -51,6 +89,11 @@ func (p *Proxy) AuthAndProxyHandler() func(ctx *fasthttp.RequestCtx) {
 		// Request Basic Authentication otherwise
 		ctx.Error(fasthttp.StatusMessage(fasthttp.StatusUnauthorized), fasthttp.StatusUnauthorized)
 	}
+}
+
+func (p *Proxy) Logger(logger *zerolog.Logger) *Proxy {
+	p.logger = logger
+	return p
 }
 
 // Run starts listening on given address

@@ -2,10 +2,14 @@ package commands
 
 import (
 	"errors"
+	"github.com/rs/zerolog"
+	"github.com/rs/zerolog/log"
 	"github.com/urfave/cli/v2"
 	"go.bnck.me/loki-auth-proxy/internal/config"
+	intLog "go.bnck.me/loki-auth-proxy/internal/log"
 	"go.bnck.me/loki-auth-proxy/pkg/authenticators"
 	"go.bnck.me/loki-auth-proxy/pkg/proxy"
+	"os"
 )
 
 func init() {
@@ -21,7 +25,10 @@ func runListen(c *cli.Context) error {
 	cfg := config.Get()
 	cfg.Load(c.String("config"))
 
-	if len(cfg.Backends) == 0 {
+	log.Logger = log.Output(zerolog.ConsoleWriter{Out: os.Stderr})
+	zerolog.SetGlobalLevel(intLog.DecodeLogLevel(cfg.Log.Level))
+
+	if cfg.Backend == "" {
 		return errors.New("no backend server specified")
 	}
 
@@ -31,9 +38,10 @@ func runListen(c *cli.Context) error {
 	}
 
 	p := proxy.Proxy{
-		Backends:      cfg.Backends,
+		Backend:       cfg.Backend,
 		Authenticator: authenticator,
 	}
 
-	return p.Run(cfg.HTTP.Listen)
+	log.Info().Msgf("Listening on %s", cfg.HTTP.Listen)
+	return p.Logger(&log.Logger).Run(cfg.HTTP.Listen)
 }
