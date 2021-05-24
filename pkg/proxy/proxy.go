@@ -17,12 +17,14 @@ type Proxy struct {
 
 var basicAuthPrefix = []byte("Basic ")
 var proxyClient *fasthttp.HostClient
+var clientName = "loki-auth-proxy"
 
 // proxyRequest proxies the request to the backend servers
 func (p *Proxy) proxyRequest(ctx *fasthttp.RequestCtx, username string) {
 	if proxyClient == nil {
 		proxyClient = &fasthttp.HostClient{
 			Addr: p.Backend,
+			Name: clientName,
 		}
 	}
 
@@ -41,6 +43,12 @@ func (p *Proxy) proxyRequest(ctx *fasthttp.RequestCtx, username string) {
 
 	// run request against backend
 	if err := proxyClient.Do(&ctx.Request, &ctx.Response); err != nil {
+		if p.logger != nil {
+			p.logger.Error().
+				Err(err).
+				Msg("Errored while getting response from backend")
+		}
+
 		ctx.Response.SetStatusCode(fasthttp.StatusInternalServerError)
 		ctx.Response.SetBody([]byte(err.Error()))
 	} else if p.logger != nil {
