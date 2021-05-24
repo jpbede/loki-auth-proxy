@@ -7,11 +7,16 @@ import (
 	"io/ioutil"
 )
 
+type user struct {
+	Password string
+	OrgID    string `yaml:"org_id"`
+}
+
 // File represents the file authenticator
 type File struct {
 	Path string
 
-	credentials map[string]string
+	credentials map[string]user
 }
 
 func init() {
@@ -42,13 +47,16 @@ func New(config map[string]string) (authenticators.Authenticator, error) {
 
 // Authenticate checks given credentials
 func (f *File) Authenticate(username, password string) bool {
-	if foundPassword, ok := f.credentials[username]; ok {
-		return password == foundPassword
+	if user, ok := f.credentials[username]; ok {
+		return password == user.Password
 	}
 	return false
 }
 
 // GetTenantID returns the ID for the X-Scope-OrgID
 func (f *File) GetTenantID(username string) string {
-	return username
+	if user, ok := f.credentials[username]; ok {
+		return user.OrgID
+	}
+	return ""
 }
