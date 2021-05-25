@@ -13,14 +13,13 @@ import (
 var (
 	version = "dev"
 	commit  = "none"
-	date    = "unknown"
 )
 
 func main() {
 	app := &cli.App{
 		Name:     "loki-auth-proxy",
 		Usage:    "Grafana Loki authentication proxy",
-		Version:  fmt.Sprintf("%s-%s published at %s", version, commit, date),
+		Version:  fmt.Sprintf("%s-%s", version, commit),
 		Commands: commands.Get(),
 		Flags: []cli.Flag{
 			&cli.StringFlag{
