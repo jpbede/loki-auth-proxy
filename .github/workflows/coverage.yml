@@ -40,3 +40,9 @@ jobs:
 
       - name: Upload coverage report
         uses: codecov/codecov-action@v1
+
+      - name: Upload coverage report to codacy
+        uses: codacy/codacy-coverage-reporter-action@v1
+        with:
+          project-token: ${{ secrets.CODACY_PROJECT_TOKEN }}
+          coverage-reports: coverage.txt
