@@ -24,7 +24,9 @@ func init() {
 
 func runListen(c *cli.Context) error {
 	cfg := config.Get()
-	cfg.Load(c.String("config"))
+	if err := cfg.Load(c.String("config")); err != nil {
+		return err
+	}
 
 	log.Logger = log.Output(zerolog.ConsoleWriter{Out: os.Stderr})
 	zerolog.SetGlobalLevel(intLog.DecodeLogLevel(cfg.Log.Level))
