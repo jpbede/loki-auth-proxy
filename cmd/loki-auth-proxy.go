@@ -18,9 +18,10 @@ var (
 
 func main() {
 	app := &cli.App{
-		Name:    "loki-auth-proxy",
-		Usage:   "Grafana Loki authentication proxy",
-		Version: fmt.Sprintf("%s-%s published at %s", version, commit, date),
+		Name:     "loki-auth-proxy",
+		Usage:    "Grafana Loki authentication proxy",
+		Version:  fmt.Sprintf("%s-%s published at %s", version, commit, date),
+		Commands: commands.Get(),
 		Flags: []cli.Flag{
 			&cli.StringFlag{
 				Name:        "config",
@@ -30,12 +31,8 @@ func main() {
 		},
 	}
 
-	// get app commands
-	app.Commands = commands.Get()
-
 	// run app
-	err := app.Run(os.Args)
-	if err != nil {
+	if err := app.Run(os.Args); err != nil {
 		log.Fatal(err)
 	}
 }
