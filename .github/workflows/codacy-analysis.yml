@@ -1,41 +1,21 @@
-# This workflow checks out code, performs a Codacy security scan
-# and integrates the results with the
-# GitHub Advanced Security code scanning feature.  For more information on
-# the Codacy security scan action usage and parameters, see
-# https://github.com/codacy/codacy-analysis-cli-action.
-# For more information on Codacy Analysis CLI in general, see
-# https://github.com/codacy/codacy-analysis-cli.
+name: Codacy Analysis CLI
 
-name: Codacy Security Scan
-
-on:
-  push:
-    branches: [ main ]
-  pull_request:
-    # The branches below must be a subset of the branches above
-    branches: [ main ]
-  schedule:
-    - cron: '23 16 * * 2'
+on: [ "push" ]
 
 jobs:
-  name: Codacy Analysis CLI
+  codacy-analysis-cli:
+    name: Codacy Analysis CLI
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@main
 
-  on: [ "push" ]
-
-  jobs:
-    codacy-analysis-cli:
-      name: Codacy Analysis CLI
-      runs-on: ubuntu-latest
-      steps:
-        - name: Checkout code
-          uses: actions/checkout@main
-
-        - name: Run Codacy Analysis CLI
-          uses: codacy/codacy-analysis-cli-action@master
-          with:
-            tool: revive
-            project-token: ${{ secrets.CODACY_PROJECT_TOKEN }}
-            upload: true
-            max-allowed-issues: 2147483647
-            run-gosec: "true"
-            run-staticcheck: "true"
+      - name: Run Codacy Analysis CLI
+        uses: codacy/codacy-analysis-cli-action@master
+        with:
+          tool: revive
+          project-token: ${{ secrets.CODACY_PROJECT_TOKEN }}
+          upload: true
+          max-allowed-issues: 2147483647
+          run-gosec: "true"
+          run-staticcheck: "true"
