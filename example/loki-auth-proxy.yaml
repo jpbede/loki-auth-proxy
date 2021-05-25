@@ -1,0 +1,15 @@
+http:
+  listen: :8081
+
+backend: localhost:3100
+
+# disable prometheus endpoint, default is enabled
+prometheus: false
+
+log:
+  level: debug
+
+authenticator:
+  name: file
+  config:
+    path: example/loki-auth.yaml
