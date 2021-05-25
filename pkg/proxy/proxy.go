@@ -3,8 +3,12 @@ package proxy
 import (
 	"bytes"
 	"encoding/base64"
+	"github.com/Mnwa/fasthttprouter-prometheus"
+	"github.com/fasthttp/router"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/rs/zerolog"
 	"github.com/valyala/fasthttp"
+	"github.com/valyala/fasthttp/fasthttpadaptor"
 	"go.bnck.me/loki-auth-proxy/pkg/authenticators"
 )
 
@@ -12,6 +16,7 @@ import (
 type Proxy struct {
 	Backend       string
 	Authenticator authenticators.Authenticator
+	Prometheus    bool
 	logger        *zerolog.Logger
 }
 
@@ -94,17 +99,32 @@ func (p *Proxy) AuthAndProxyHandler() func(ctx *fasthttp.RequestCtx) {
 			}
 		}
 
+		hdl := fasthttpadaptor.NewFastHTTPHandler(promhttp.Handler())
+		hdl(ctx)
+
 		// Request Basic Authentication otherwise
 		ctx.Error(fasthttp.StatusMessage(fasthttp.StatusUnauthorized), fasthttp.StatusUnauthorized)
 	}
 }
 
-func (p *Proxy) Logger(logger *zerolog.Logger) *Proxy {
-	p.logger = logger
-	return p
-}
-
 // Run starts listening on given address
-func (p *Proxy) Run(listenAddress string) error {
-	return fasthttp.ListenAndServe(listenAddress, p.AuthAndProxyHandler())
+func (p *Proxy) Run(listenAddress string, opts ...Option) error {
+	// run options on proxy object
+	for _, opt := range opts {
+		opt(p)
+	}
+
+	// create router
+	r := router.New()
+	r.ANY("/{path:*}", p.AuthAndProxyHandler())
+	handler := r.Handler
+
+	// add prometheus endpoint when enabled
+	if p.Prometheus {
+		prom := fasthttprouter_prometheus.NewPrometheus("loki_auth_proxy")
+		handler = prom.WrapHandler(r)
+	}
+
+	// now listen and serve
+	return fasthttp.ListenAndServe(listenAddress, handler)
 }

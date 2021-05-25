@@ -43,5 +43,5 @@ func runListen(c *cli.Context) error {
 	}
 
 	log.Info().Msgf("Listening on %s", cfg.HTTP.Listen)
-	return p.Logger(&log.Logger).Run(cfg.HTTP.Listen)
+	return p.Run(cfg.HTTP.Listen, proxy.WithLogger(&log.Logger), proxy.WithPrometheus())
 }
