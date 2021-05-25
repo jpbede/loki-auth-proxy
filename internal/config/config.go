@@ -8,6 +8,8 @@ type Config struct {
 		Listen string `default:":8080"`
 	}
 
+	Prometheus bool `default:"true"`
+
 	Backend string
 
 	Authenticator struct {

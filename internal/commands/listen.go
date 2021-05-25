@@ -42,6 +42,11 @@ func runListen(c *cli.Context) error {
 		Authenticator: authenticator,
 	}
 
+	opts := []proxy.Option{proxy.WithLogger(&log.Logger)}
+	if cfg.Prometheus {
+		opts = append(opts, proxy.WithPrometheus())
+	}
+
 	log.Info().Msgf("Listening on %s", cfg.HTTP.Listen)
-	return p.Run(cfg.HTTP.Listen, proxy.WithLogger(&log.Logger), proxy.WithPrometheus())
+	return p.Run(cfg.HTTP.Listen, opts...)
 }
