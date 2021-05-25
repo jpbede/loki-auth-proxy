@@ -7,6 +7,7 @@ import (
 	"log"
 	"os"
 
+	_ "go.bnck.me/loki-auth-proxy/internal/commands/listen"
 	_ "go.bnck.me/loki-auth-proxy/pkg/authenticators/all"
 )
 

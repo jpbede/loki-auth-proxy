@@ -9,8 +9,7 @@ import (
 
 func TestGet(t *testing.T) {
 	cmds := commands.Get()
-	assert.NotNil(t, cmds)
-	assert.Greater(t, len(cmds), 0)
+	assert.Equal(t, len(cmds), 0)
 }
 
 func TestRegisterCommand(t *testing.T) {

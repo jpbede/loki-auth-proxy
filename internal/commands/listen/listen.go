@@ -1,10 +1,11 @@
-package commands
+package listen
 
 import (
 	"errors"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 	"github.com/urfave/cli/v2"
+	"go.bnck.me/loki-auth-proxy/internal/commands"
 	"go.bnck.me/loki-auth-proxy/internal/config"
 	intLog "go.bnck.me/loki-auth-proxy/internal/log"
 	"go.bnck.me/loki-auth-proxy/pkg/authenticators"
@@ -13,7 +14,7 @@ import (
 )
 
 func init() {
-	RegisterCommand(&cli.Command{
+	commands.RegisterCommand(&cli.Command{
 		Name:    "listen",
 		Aliases: []string{"l"},
 		Usage:   "Starts the loki auth proxy",
