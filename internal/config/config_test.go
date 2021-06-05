@@ -13,7 +13,7 @@ func TestGet(t *testing.T) {
 
 	expectedCfg := &config.Config{HTTP: struct {
 		Listen string "default:\":8080\""
-	}{Listen: ""}, Prometheus: false, Backend: "", Authenticator: struct {
+	}{Listen: ""}, Prometheus: false, Authenticator: struct {
 		Name   string
 		Config map[string]string
 	}{Name: "", Config: map[string]string(nil)}, Log: struct {
@@ -31,7 +31,11 @@ func TestConfig_Load(t *testing.T) {
 
 	expectedCfg := &config.Config{HTTP: struct {
 		Listen string "default:\":8080\""
-	}{Listen: ":8081"}, Prometheus: false, Backend: "localhost:3100", Authenticator: struct {
+	}{Listen: ":8081"}, Prometheus: false, Backend: struct {
+		Distributor   string
+		QueryFrontend string "yaml:\"query_frontend\""
+		Querier       string
+	}{Distributor: "distributor:3100", QueryFrontend: "query-frontend:3100", Querier: "querier:3100"}, Authenticator: struct {
 		Name   string
 		Config map[string]string
 	}{Name: "file", Config: map[string]string{"path": "example/loki-auth.yaml"}}, Log: struct {
