@@ -31,8 +31,12 @@ func runListen(c *cli.Context) error {
 	log.Logger = log.Output(zerolog.ConsoleWriter{Out: os.Stderr})
 	zerolog.SetGlobalLevel(intLog.DecodeLogLevel(cfg.Log.Level))
 
-	if cfg.Backend == "" {
-		return errors.New("no backend server specified")
+	if cfg.Backend.Distributor == "" {
+		return errors.New("no distributor specified")
+	}
+
+	if cfg.Backend.QueryFrontend == "" {
+		return errors.New("no query-frontend specified")
 	}
 
 	authenticator, err := authenticators.GetAuthenticator(cfg.Authenticator.Name, cfg.Authenticator.Config)
@@ -40,10 +44,7 @@ func runListen(c *cli.Context) error {
 		return err
 	}
 
-	p := proxy.Proxy{
-		Backend:       cfg.Backend,
-		Authenticator: authenticator,
-	}
+	p := proxy.New(cfg.Backend.Distributor, cfg.Backend.QueryFrontend, cfg.Backend.Querier, authenticator)
 
 	opts := []proxy.Option{proxy.WithLogger(&log.Logger)}
 	if cfg.Prometheus {

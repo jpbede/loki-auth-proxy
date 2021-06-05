@@ -8,8 +8,7 @@ import (
 )
 
 func TestGet(t *testing.T) {
-	cmds := commands.Get()
-	assert.Equal(t, len(cmds), 0)
+	assert.Equal(t, 0, len(commands.Get()))
 }
 
 func TestRegisterCommand(t *testing.T) {

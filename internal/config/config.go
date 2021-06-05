@@ -10,7 +10,11 @@ type Config struct {
 
 	Prometheus bool `default:"true"`
 
-	Backend string
+	Backend struct {
+		Distributor   string
+		QueryFrontend string `yaml:"query_frontend"`
+		Querier       string
+	}
 
 	Authenticator struct {
 		Name   string

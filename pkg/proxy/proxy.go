@@ -14,25 +14,45 @@ import (
 
 // Proxy represents the loki proxy
 type Proxy struct {
-	Backend       string
+	Distributor   string
+	QueryFrontend string
+	Querier       string
 	Authenticator authenticators.Authenticator
 	Prometheus    bool
-	logger        *zerolog.Logger
+
+	logger              *zerolog.Logger
+	distributorClient   *fasthttp.HostClient
+	queryFrontendClient *fasthttp.HostClient
+	querierClient       *fasthttp.HostClient
 }
 
 var basicAuthPrefix = []byte("Basic ")
-var proxyClient *fasthttp.HostClient
 var clientName = "loki-auth-proxy"
 
-// proxyRequest proxies the request to the backend servers
-func (p *Proxy) proxyRequest(ctx *fasthttp.RequestCtx, username string) {
-	if proxyClient == nil {
-		proxyClient = &fasthttp.HostClient{
-			Addr: p.Backend,
-			Name: clientName,
-		}
-	}
+func New(distributor, queryFrontend, querier string, authenticator authenticators.Authenticator) *Proxy {
+	return &Proxy{
+		Distributor:   distributor,
+		QueryFrontend: queryFrontend,
+		Querier:       querier,
+		Authenticator: authenticator,
 
+		distributorClient: &fasthttp.HostClient{
+			Addr: distributor,
+			Name: clientName,
+		},
+		queryFrontendClient: &fasthttp.HostClient{
+			Addr: queryFrontend,
+			Name: clientName,
+		},
+		querierClient: &fasthttp.HostClient{
+			Addr: querier,
+			Name: clientName,
+		},
+	}
+}
+
+// proxyRequest proxies the request to the backend servers
+func (p *Proxy) proxyRequest(ctx *fasthttp.RequestCtx, username string, proxyClient *fasthttp.HostClient) {
 	if p.logger != nil {
 		p.logger.Debug().
 			Str("for-host", string(ctx.Request.Host())).
@@ -41,7 +61,7 @@ func (p *Proxy) proxyRequest(ctx *fasthttp.RequestCtx, username string) {
 	}
 
 	// prepare fasthttp context
-	p.prepareContext(ctx)
+	p.prepareContext(ctx, proxyClient)
 
 	// get org id form authenticator for username
 	ctx.Request.Header.Add("X-Scope-OrgID", p.Authenticator.GetTenantID(username))
@@ -67,7 +87,7 @@ func (p *Proxy) proxyRequest(ctx *fasthttp.RequestCtx, username string) {
 }
 
 // AuthAndProxyHandler handler func for fasthttp that performs authentication and proxying
-func (p *Proxy) AuthAndProxyHandler() func(ctx *fasthttp.RequestCtx) {
+func (p *Proxy) AuthAndProxyHandler(client *fasthttp.HostClient) func(ctx *fasthttp.RequestCtx) {
 	return func(ctx *fasthttp.RequestCtx) {
 		if p.logger != nil {
 			p.logger.Debug().
@@ -81,7 +101,7 @@ func (p *Proxy) AuthAndProxyHandler() func(ctx *fasthttp.RequestCtx) {
 				if err == nil {
 					pair := bytes.SplitN(payload, []byte(":"), 2)
 					if len(pair) == 2 && p.Authenticator.Authenticate(string(pair[0]), string(pair[1])) {
-						p.proxyRequest(ctx, string(pair[0]))
+						p.proxyRequest(ctx, string(pair[0]), client)
 						return
 					}
 					if p.logger != nil {
@@ -116,7 +136,15 @@ func (p *Proxy) Run(listenAddress string, opts ...Option) error {
 
 	// create router
 	r := router.New()
-	r.ANY("/{path:*}", p.AuthAndProxyHandler())
+	// distributor
+	r.POST("/loki/api/v1/push", p.AuthAndProxyHandler(p.distributorClient))
+	r.POST("/api/prom/push", p.AuthAndProxyHandler(p.distributorClient))
+	// querier
+	r.ANY("/loki/api/v1/tail", p.AuthAndProxyHandler(p.querierClient))
+	r.ANY("/api/prom/tail ", p.AuthAndProxyHandler(p.querierClient))
+	// query-frontend
+	r.ANY("/loki/{path:*}", p.AuthAndProxyHandler(p.queryFrontendClient))
+	r.ANY("/api/{path:*}", p.AuthAndProxyHandler(p.queryFrontendClient))
 	handler := r.Handler
 
 	// add prometheus endpoint when enabled

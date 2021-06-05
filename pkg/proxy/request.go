@@ -2,7 +2,7 @@ package proxy
 
 import "github.com/valyala/fasthttp"
 
-func (p *Proxy) prepareContext(ctx *fasthttp.RequestCtx) {
+func (p *Proxy) prepareContext(ctx *fasthttp.RequestCtx, proxyClient *fasthttp.HostClient) {
 	// add X-Forwarded header to the request
 	p.addXForwardedHeader(ctx)
 
