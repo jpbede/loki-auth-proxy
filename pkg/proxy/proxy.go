@@ -3,8 +3,8 @@ package proxy
 import (
 	"bytes"
 	"encoding/base64"
-	fasthttpprom "github.com/carousell/fasthttp-prometheus-middleware"
 	"github.com/fasthttp/router"
+	fasthttpprom "github.com/jpbede/fasthttp-prometheus-middleware"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/rs/zerolog"
 	"github.com/valyala/fasthttp"
