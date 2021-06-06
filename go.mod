@@ -13,3 +13,5 @@ require (
 	github.com/valyala/fasthttp v1.25.0
 	gopkg.in/yaml.v2 v2.3.0
 )
+
+replace github.com/carousell/fasthttp-prometheus-middleware v1.0.3 => github.com/jpbede/fasthttp-prometheus-middleware v1.1.0
