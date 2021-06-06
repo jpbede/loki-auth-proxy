@@ -3,7 +3,7 @@ package proxy
 import (
 	"bytes"
 	"encoding/base64"
-	"github.com/Mnwa/fasthttprouter-prometheus"
+	fasthttpprom "github.com/carousell/fasthttp-prometheus-middleware"
 	"github.com/fasthttp/router"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/rs/zerolog"
@@ -149,8 +149,9 @@ func (p *Proxy) Run(listenAddress string, opts ...Option) error {
 
 	// add prometheus endpoint when enabled
 	if p.Prometheus {
-		prom := fasthttprouter_prometheus.NewPrometheus("loki_auth_proxy")
-		handler = prom.WrapHandler(r)
+		prom := fasthttpprom.NewPrometheus("loki_auth_proxy")
+		prom.Use(r)
+		handler = prom.Handler
 	}
 
 	// now listen and serve

@@ -3,7 +3,7 @@ module go.bnck.me/loki-auth-proxy
 go 1.16
 
 require (
-	github.com/Mnwa/fasthttprouter-prometheus v0.0.0-20190920114442-a12d40b15b9e
+	github.com/carousell/fasthttp-prometheus-middleware v1.0.3
 	github.com/fasthttp/router v1.3.13
 	github.com/jinzhu/configor v1.2.1
 	github.com/prometheus/client_golang v1.10.0
