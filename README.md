@@ -15,6 +15,25 @@ To use this, Grafana Loki needs to be configured in multi tenant mode with `auth
 ### Binaries
 You will find pre-compiled binaries and packages for the most common OS under the [releases](https://github.com/jpbede/loki-auth-proxy/releases).
 
+### Docker
+```shell
+docker run -v $(pwd)/loki-auth-proxy.yml:/etc/loki-auth-proxy.yml -v $(pwd)/loki-auth.yml:/etc/loki-auth.yml -p 8081:8081 ghcr.io/jpbede/loki-auth-proxy:latest
+```
+
+or via `docker-compose.yml`
+
+```yaml
+version: "3"
+services:
+  auth-proxy:
+    image: ghcr.io/jpbede/loki-auth-proxy:latest
+    ports:
+      - 8081:8081
+    volumes:
+      - "/etc/loki-auth-proxy.yml:/etc/loki-auth-proxy.yaml"
+      - "/etc/loki-auth.yml:/etc/loki-auth.yml"
+```
+
 ### macOS
 Simply use `homebrew` (https://brew.sh/)
 
