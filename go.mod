@@ -4,6 +4,7 @@ go 1.16
 
 require (
 	github.com/fasthttp/router v1.3.13
+	github.com/fasthttp/websocket v1.4.3
 	github.com/jinzhu/configor v1.2.1
 	github.com/jpbede/fasthttp-prometheus-middleware v1.1.1
 	github.com/prometheus/client_golang v1.10.0

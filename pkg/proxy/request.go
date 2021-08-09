@@ -10,7 +10,7 @@ func (p *Proxy) prepareContext(ctx *fasthttp.RequestCtx, proxyClient *fasthttp.H
 	p.removeHopByHopHeaders(&ctx.Request, nil)
 
 	// set Host header to configured one so we can support virtual hosts
-	// and not only IP <addresses
+	// and not only IP addresses
 	ctx.Request.SetHost(proxyClient.Addr)
 }
 

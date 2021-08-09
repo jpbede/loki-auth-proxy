@@ -4,7 +4,7 @@ http:
 backend:
   distributor: distributor:3100
   query_frontend: query-frontend:3100
-  querier: querier:3100
+  querier: ws://querier:3100
 
 # disable prometheus endpoint, default is enabled
 prometheus: false

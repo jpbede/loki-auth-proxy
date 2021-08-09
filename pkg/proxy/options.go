@@ -2,7 +2,7 @@ package proxy
 
 import "github.com/rs/zerolog"
 
-// Option option function that enables a feature on Proxy
+// Option function that enables a feature on Proxy
 type Option func(proxy *Proxy)
 
 // WithPrometheus enables prometheus metric endpoint
