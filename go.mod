@@ -11,6 +11,6 @@ require (
 	github.com/rs/zerolog v1.22.0
 	github.com/stretchr/testify v1.7.0
 	github.com/urfave/cli/v2 v2.3.0
-	github.com/valyala/fasthttp v1.25.0
+	github.com/valyala/fasthttp v1.34.0
 	gopkg.in/yaml.v2 v2.3.0
 )
